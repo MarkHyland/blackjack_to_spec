@@ -1,71 +1,86 @@
 require 'minitest/autorun'
 
 class Card
+  
+  attr_reader :rank, :suit
 
   def initialize rank, suit
     @rank = rank
     @suit = suit
   end
 
-  attr_reader :rank, :suit
-
-  def face_card
-    face_card = :J || :Q || :K 
-  end
-
-  def ace_card
-    ace_card = :A
-  end
-
   def value
-    if rank = face_card
+    if rank == :J || rank == :Q || rank == :K
       10
-    elsif rank = ace_card
+    elsif rank = :A
       1
     else
       rank
     end
   end
+  
+  def to_s
+    "#{rank}#{suit}"
+  end
 end
 
 class Deck
+  
+   attr_reader :cards, :drawn_card
 
   def initialize 
     @cards = %w[A 2 3 4 5 6 7 8 9 T J Q K].product(%w[:C :D :H S]).map(&:join)
   end
 
-  attr_reader :cards
-
   def draw 
-    cards.shift
+    @drawn_card = cards.shift
   end
 
   def drawn
-    cards.unshift
-    cards
+    cards.unshift(@drawn_card)
   end
 end
 
 
 class Hand
+  
+  attr_reader :hand
+  
   def initialize
     @hand = []
   end
 
-  attr_reader :hand
-
-  def add thing, thing2
-    hand.push(thing, thing2)
+  def add *things
+    hand.push(*things)
   end
   
   def value
     running_total = 0
     hand.each do |x|
       running_total = x.value + running_total
+    end
+    if running_total <= 11 && hand.to_s.include("A")
+      running_total + 10
+    else
+      running_total
+    end
   end
-  running_total
-end
-
+  
+  def to_a
+    hand.map{ |card| card.to_s }
+  end
+  
+  def to_s
+    hand.map{ |card| card.to_s }.join(",")
+  end
+  
+  def busted?
+    value > 21
+  end
+  
+  def blackjack
+    value == 21 && hand.to_a.count == 2
+  end
 end
  
 class TestCard < Minitest::Test
